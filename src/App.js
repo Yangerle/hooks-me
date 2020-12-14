@@ -1,25 +1,52 @@
-import logo from './logo.svg';
-import './App.css';
+
+
+import React, {
+    useContext,
+    useEffect,
+    useState,
+    useMemo,
+    useCallback,
+    useRef,
+    useLayoutEffect,
+    useReducer
+} from 'react'
+
+const themes = {
+    light: {
+        foreground: "#000000",
+        background: "#eeeeee"
+    },
+    dark: {
+        foreground: "#ffffff",
+        background: "#222222"
+    }
+};
+
+const ThemeContext = React.createContext(themes.light);
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    return (
+        <ThemeContext.Provider value={themes.dark}>
+            <Toolbar />
+        </ThemeContext.Provider>
+    );
+}
+
+function Toolbar(props) {
+    return (
+        <div>
+            <ThemedButton />
+        </div>
+    );
+}
+
+function ThemedButton() {
+    const theme = useContext(ThemeContext);
+    return (
+        <button style={{ background: theme.background, color: theme.foreground }}>
+            I am styled by theme context!
+        </button>
+    );
 }
 
 export default App;
