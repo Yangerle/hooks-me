@@ -10,7 +10,8 @@ import React, {
     useLayoutEffect,
     useReducer,
     forwardRef,
-    useImperativeHandle
+    useImperativeHandle,
+    useDebugValue
 } from 'react'
 
 /*
@@ -28,6 +29,10 @@ function useNumber(){
             setNumber(number=>number+1);
         },1000);
     },[]);
+    // 在开发者工具中的这个 Hook 旁边显示标签
+    // e.g. "Number: 自定义hook标签"
+    useDebugValue('自定义hook标签');
+    useDebugValue(number);
     return [number,setNumber];
 }
 // 每个组件调用同一个 hook，只是复用 hook 的状态逻辑，并不会共用一个状态
