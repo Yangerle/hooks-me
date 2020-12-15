@@ -13,52 +13,48 @@ import React, {
     useImperativeHandle
 } from 'react'
 
-
-function Child(props,parentRef){
-    // 子组件内部自己创建 ref
-    let focusRef = useRef();
-    let inputRef = useRef();
-    //useImperativeHandle 与 forwardRef 一起配合使用
-    useImperativeHandle(parentRef,()=>{
-        // 这个函数会返回一个对象
-        // 该对象会作为父组件 current 属性的值
-        // 通过这种方式，父组件可以使用操作子组件中的多个 ref
-        return {
-            focusRef,
-            inputRef,
-            name:'计数器',
-            focus(){
-                focusRef.current.focus();
-            },
-            changeText(text){
-                inputRef.current.value = text;
-            }
-        }
-    });
-    return (
-        <>
-            <input ref={focusRef}/>
-            <input ref={inputRef}/>
-        </>
-    )
-
+/*
+link:https://juejin.cn/post/6844903985338400782#heading-28
+自定义 Hook 更像是一种约定，而不是一种功能。如果函数的名字以 use 开头，并且调用了其他的 Hook，则就称其为一个自定义 Hook
+有时候我们会想要在组件之间重用一些状态逻辑，之前要么用 render props ，要么用高阶组件，要么使用 redux
+自定义 Hook 可以让你在不增加组件的情况下达到同样的目的
+Hook 是一种复用状态逻辑的方式，它不复用 state 本身
+事实上 Hook 的每次调用都有一个完全独立的 state
+* */
+function useNumber(){
+    let [number,setNumber] = useState(0);
+    useEffect(()=>{
+        setInterval(()=>{
+            setNumber(number=>number+1);
+        },1000);
+    },[]);
+    return [number,setNumber];
 }
-Child = forwardRef(Child);
-function Parent(){
-    const parentRef = useRef();//{current:''}
-    function getFocus(){
-        parentRef.current.focus();
-        // 因为子组件中没有定义这个属性，实现了保护，所以这里的代码无效
-        // parentRef.current.addNumber(666);
-        parentRef.current.changeText('<script>alert(1)</script>');
-        console.log(parentRef.current.name);
-    }
+// 每个组件调用同一个 hook，只是复用 hook 的状态逻辑，并不会共用一个状态
+function Counter1(){
+    let [number,setNumber] = useNumber();
+    return (
+        <div><button onClick={()=>{
+            setNumber(number+1)
+        }}>{number}</button></div>
+    )
+}
+function Counter2(){
+    let [number,setNumber] = useNumber();
+    return (
+        <div><button  onClick={()=>{
+            //在return内一定已经拿到了state了，不需要做监听或回调函数来获取state的最新值
+            setNumber(number+1)
+        }}>{number}</button></div>
+    )
+}
+function App() {
     return (
         <>
-            <Child ref={parentRef}/>
-            <button onClick={getFocus}>获得焦点</button>
+            <Counter1/>
+            <Counter2/>
         </>
     )
 }
 
-export default Parent;
+export default App;
