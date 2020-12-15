@@ -10,32 +10,33 @@ import React, {
     useLayoutEffect,
     useReducer
 } from 'react'
-//link:https://juejin.cn/post/6844903985338400782#heading-23
-/*
-useEffect 在全部渲染完毕后才会执行
-useLayoutEffect 会在 浏览器 layout 之后，painting 之前执行
-其函数签名与 useEffect 相同，但它会在所有的 DOM 变更之后同步调用 effect
-可以使用它来读取 DOM 布局并同步触发重渲染
-在浏览器执行绘制之前 useLayoutEffect 内部的更新计划将被同步刷新
-尽可能使用标准的 useEffect 以避免阻塞视图更新
-*/
-function LayoutEffect() {
-    const [color, setColor] = useState('red');
-    useLayoutEffect(() => {
-        // alert(color);
-        console.log('useLayoutEffect先执行了')
-    });
-    useEffect(() => {
-        console.log('color', color);
-    });
+
+
+function Child(props,ref){
+    return (
+        <input type="text" ref={ref}/>
+    )
+}
+//因为函数组件没有实例，所以函数组件无法像类组件一样可以接收 ref 属性，需要使用forwardRef做转化
+Child = React.forwardRef(Child);
+function Parent(){
+    // 在使用类组件的时候，创建 ref 返回一个对象，该对象的 current 属性值为空
+    // 只有当它被赋给某个元素的 ref 属性时，才会有值
+    // 所以父组件（类组件）创建一个 ref 对象，然后传递给子组件（类组件），子组件内部有元素使用了
+    // 那么父组件就可以操作子组件中的某个元素
+    // 但是函数组件无法接收 ref 属性 <Child ref={xxx} /> 这样是不行的
+    // 所以就需要用到 forwardRef 进行转发
+    const inputRef = useRef();//{current:''}
+    function getFocus(){
+        inputRef.current.value = 'focus';
+        inputRef.current.focus();
+    }
     return (
         <>
-            <div id="myDiv" style={{ background: color }}>颜色</div>
-            <button onClick={() => setColor('red')}>红</button>
-            <button onClick={() => setColor('yellow')}>黄</button>
-            <button onClick={() => setColor('blue')}>蓝</button>
+            <Child ref={inputRef}/>
+            <button onClick={getFocus}>获得焦点</button>
         </>
-    );
+    )
 }
 
-export default LayoutEffect;
+export default Parent;
