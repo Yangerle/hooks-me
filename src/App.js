@@ -8,32 +8,54 @@ import React, {
     useCallback,
     useRef,
     useLayoutEffect,
-    useReducer
+    useReducer,
+    forwardRef,
+    useImperativeHandle
 } from 'react'
 
 
-function Child(props,ref){
+function Child(props,parentRef){
+    // 子组件内部自己创建 ref
+    let focusRef = useRef();
+    let inputRef = useRef();
+    //useImperativeHandle 与 forwardRef 一起配合使用
+    useImperativeHandle(parentRef,()=>{
+        // 这个函数会返回一个对象
+        // 该对象会作为父组件 current 属性的值
+        // 通过这种方式，父组件可以使用操作子组件中的多个 ref
+        return {
+            focusRef,
+            inputRef,
+            name:'计数器',
+            focus(){
+                focusRef.current.focus();
+            },
+            changeText(text){
+                inputRef.current.value = text;
+            }
+        }
+    });
     return (
-        <input type="text" ref={ref}/>
+        <>
+            <input ref={focusRef}/>
+            <input ref={inputRef}/>
+        </>
     )
+
 }
-//因为函数组件没有实例，所以函数组件无法像类组件一样可以接收 ref 属性，需要使用forwardRef做转化
-Child = React.forwardRef(Child);
+Child = forwardRef(Child);
 function Parent(){
-    // 在使用类组件的时候，创建 ref 返回一个对象，该对象的 current 属性值为空
-    // 只有当它被赋给某个元素的 ref 属性时，才会有值
-    // 所以父组件（类组件）创建一个 ref 对象，然后传递给子组件（类组件），子组件内部有元素使用了
-    // 那么父组件就可以操作子组件中的某个元素
-    // 但是函数组件无法接收 ref 属性 <Child ref={xxx} /> 这样是不行的
-    // 所以就需要用到 forwardRef 进行转发
-    const inputRef = useRef();//{current:''}
+    const parentRef = useRef();//{current:''}
     function getFocus(){
-        inputRef.current.value = 'focus';
-        inputRef.current.focus();
+        parentRef.current.focus();
+        // 因为子组件中没有定义这个属性，实现了保护，所以这里的代码无效
+        // parentRef.current.addNumber(666);
+        parentRef.current.changeText('<script>alert(1)</script>');
+        console.log(parentRef.current.name);
     }
     return (
         <>
-            <Child ref={inputRef}/>
+            <Child ref={parentRef}/>
             <button onClick={getFocus}>获得焦点</button>
         </>
     )
