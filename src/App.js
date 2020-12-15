@@ -11,70 +11,35 @@ import React, {
     useReducer
 } from 'react'
 
-const Themes = {
-    light: {
-        foreground: "#000000",
-        background: "#eeeeee"
-    },
-    dark: {
-        foreground: "#ffffff",
-        background: "#222222"
-    }
-};
+const initialState = {count: 0};
 
-const ThemeContext = React.createContext(Themes);
-
-function App() {
-    const [themes,setThemes] = useState(Themes)
-    const handleClick = ()=>{
-        setThemes((prethemes)=>{
-            return {
-                ...prethemes,
-                red: {
-                    foreground: "#ffffff",
-                    background: "red"
-                }
-            }
-        })
+function reducer(state, action) {
+    switch (action.type) {
+        case 'increment':
+            return {count: state.count + 1};
+        case 'decrement':
+            return {count: state.count - 1};
+        case 'add2':
+            return {count: state.count + 2}
+        default:
+            throw new Error();
     }
+}
+
+const init = state=>({count: 5})
+
+function Counter() {
+    //适用场景：1. state 逻辑较复杂且包含多个子值，2.下一个 state 依赖于之前的 state，3.使用 useReducer 还能给那些会触发深更新的组件做性能优化
+    //你可以向子组件传递 dispatch 而不是回调函数
+    const [state, dispatch] = useReducer(reducer, {count: 0}, init);
     return (
-        <ThemeContext.Provider value={themes}>
-            <Toolbar />
-            <button onClick={handleClick}>
-                改变context的value
-            </button>
-        </ThemeContext.Provider>
+        <>
+            Count: {state.count}
+            <button onClick={() => dispatch({type: 'decrement'})}>-</button>
+            <button onClick={() => dispatch({type: 'increment'})}>+</button>
+            <button onClick={() => dispatch({type: 'add2'})}>+</button>
+        </>
     );
 }
 
-function Toolbar(props) {
-    return (
-        <div>
-            <ThemedButton />
-        </div>
-    );
-}
-
-function ThemedButton() {
-    const themes = useContext(ThemeContext);
-    const light = themes.light
-    // return (
-    //     <button style={{ background: light.background, color: light.foreground }}>
-    //         {console.log('render')}
-    //         {console.log(themes,'themes')}
-    //         I am styled by theme context!
-    //     </button>
-    // );
-    console.log(themes,'themes')
-    //通过useMemo的监听及缓存使context在局部改变时，不再重新渲染使用useContext的组件。
-    //这对于高开销组件的缓存很有用
-    //memo只会对props做潜比较，所以在使用useContext的组件中，即使组件使用了memo，当context局部改变时，也会重新渲染组件。
-    return useMemo(()=>(
-        <button style={{ background: light.background, color: light.foreground }}>
-            {console.log('render')}
-            I am styled by theme context!
-        </button>
-    ),[light])
-}
-
-export default App;
+export default Counter;
