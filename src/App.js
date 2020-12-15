@@ -10,36 +10,32 @@ import React, {
     useLayoutEffect,
     useReducer
 } from 'react'
-
-const initialState = {count: 0};
-
-function reducer(state, action) {
-    switch (action.type) {
-        case 'increment':
-            return {count: state.count + 1};
-        case 'decrement':
-            return {count: state.count - 1};
-        case 'add2':
-            return {count: state.count + 2}
-        default:
-            throw new Error();
-    }
-}
-
-const init = state=>({count: 5})
-
-function Counter() {
-    //适用场景：1. state 逻辑较复杂且包含多个子值，2.下一个 state 依赖于之前的 state，3.使用 useReducer 还能给那些会触发深更新的组件做性能优化
-    //你可以向子组件传递 dispatch 而不是回调函数
-    const [state, dispatch] = useReducer(reducer, {count: 0}, init);
+//link:https://juejin.cn/post/6844903985338400782#heading-23
+/*
+useEffect 在全部渲染完毕后才会执行
+useLayoutEffect 会在 浏览器 layout 之后，painting 之前执行
+其函数签名与 useEffect 相同，但它会在所有的 DOM 变更之后同步调用 effect
+可以使用它来读取 DOM 布局并同步触发重渲染
+在浏览器执行绘制之前 useLayoutEffect 内部的更新计划将被同步刷新
+尽可能使用标准的 useEffect 以避免阻塞视图更新
+*/
+function LayoutEffect() {
+    const [color, setColor] = useState('red');
+    useLayoutEffect(() => {
+        // alert(color);
+        console.log('useLayoutEffect先执行了')
+    });
+    useEffect(() => {
+        console.log('color', color);
+    });
     return (
         <>
-            Count: {state.count}
-            <button onClick={() => dispatch({type: 'decrement'})}>-</button>
-            <button onClick={() => dispatch({type: 'increment'})}>+</button>
-            <button onClick={() => dispatch({type: 'add2'})}>+</button>
+            <div id="myDiv" style={{ background: color }}>颜色</div>
+            <button onClick={() => setColor('red')}>红</button>
+            <button onClick={() => setColor('yellow')}>黄</button>
+            <button onClick={() => setColor('blue')}>蓝</button>
         </>
     );
 }
 
-export default Counter;
+export default LayoutEffect;
