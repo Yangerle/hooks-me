@@ -37,39 +37,42 @@ const Child = ({handleClick})=>{
         <button onClick={handleClick}>点击我</button>
     )
 }
+
+const ChildTwo = React.memo(({ handleClick2 }) => {
+    console.log('childtwo: 我渲染了')
+    return (
+        <button onClick={handleClick2}>点击我2</button>
+    )
+})
+
 const App = ()=>{
     const [num,setNum] = useState(0)
 
     const handleClick = ()=>{
-
-        setNum(num + 1)
-        setNum(num + 1)
-        setNum(num + 1)
-        console.log('num',num)
-
-        // setTimeout(()=>{
-        //     console.log(num)
-        //     setNum((a)=>{
-        //         console.log(a)
-        //         return a + 1
-        //     })
-        // })
-
-        // 排除setTimeout影响，研究闭包的形成
-        ;(()=>{
-            console.log(num)
-            setNum((a)=>{
-                console.log(a)
-                return a + 1
-            })
-        })()
+        setNum(num+1)
     }
+    // const handleClick2 = useCallback(()=>{
+    //     setNum(1)
+    // },[])
+    // const handleClick2 = useCallback(()=>{
+    //     setNum(num+1)
+    // },[num])
+    const handleClick2 = useCallback(()=>{
+        setNum(num=>num+1)
+    },[])
+
+    const obj = useMemo(()=>{
+        return {}
+    },[])
     console.log('父：渲染了')
+
     return (
         <>
             {num}
             <br/>
             <Child handleClick={handleClick}/>
+            <ChildTwo handleClick2={handleClick2}/>
+            {/* <ChildTwo a={obj}/> */}
         </>
     )
 
