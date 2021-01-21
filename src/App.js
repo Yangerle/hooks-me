@@ -14,7 +14,6 @@ import React, {
     useDebugValue
 } from 'react'
 
-// import Promise from './promise'
 
 /*
 * 列出渲染次数多的原因：
@@ -30,147 +29,50 @@ import React, {
 *   3. 当作为props传递给子组件时，配合React.memo用于减少子组件的渲染次数。
 * */
 
-const TestTimes0 = React.memo(({changeNumber0})=>{
-    console.log('TestTimes0子：我渲染了');
-    return (
-        <>
-            <button onClick={changeNumber0}>重设数字0</button>
-        </>
-    )
-})
-const TestTimes1 = React.memo(({changeNumber1})=>{
-    console.log('TestTimes1子：我渲染了');
-    return (
-        <>
-            <button onClick={changeNumber1}>重设数字1</button>
-        </>
-    )
-})
-/*
-* 测试宏任务与微任务
-* Promise原生的实现和系统提供的微任务接口有关（如nextTick）。
-* 本地可以使用setTimeout来实现，不过调用顺序和原生的微任务是不一样的，因为其实现方式是宏任务。
-* */
-const promise = ()=>{
-    console.log('马上执行for循环啦');
-    setTimeout(function(){
-        console.log('定时器开始啦1')
-    });
-}
 
-const Hah = ()=>{
+const Child = ({handleClick})=>{
+    console.log('child: 我渲染了')
+
+    return (
+        <button onClick={handleClick}>点击我</button>
+    )
+}
+const App = ()=>{
+    const [num,setNum] = useState(0)
 
     const handleClick = ()=>{
-        setTimeout(function(){
-            console.log('定时器开始啦0')
-        });
 
-        // promise()
-
-        new Promise(function(resolve){
-            console.log('马上执行for循环啦');
-            for(var i = 0; i < 10000; i++){
-                i === 99 && resolve();
-            }
-        }).then(function(){
-            console.log('执行then函数啦')
-        });
-
-        console.log('代码执行结束');
-    }
-    return (
-        <>
-            <button onClick={handleClick}>执行测试任务</button>
-        </>
-    )
-}
-
-const App = ()=>{
-    const [number0,setNumber0] = useState(0);
-    const [number1,setNumber1] = useState(1);
-    const changeNumber0 = ()=>{
-        setNumber0(number0+1)
-        console.log(number0)
-        setNumber0(number0+1)
-        console.log(number0)
-        setNumber0(number0+1)
-        console.log(number0)
-
-        // 宏任务中
-        // setTimeout(()=>{
-        //     console.log('执行setTimeout')
-        //     setNumber0(number0+1)
-        //     console.log(number0)
-        //     setNumber0(number0+1)
-        //     console.log(number0)
-        //     setNumber0(number0+1)
-        //     console.log(number0)
-        // })
-        //
-
-        // 微任务中（fetch由promise实现）
-        // fetch('http://192.168.20.146:3000/mock/551/auth/global/wrongtopic/appeal.htm')
-        //     .then(response=>response.json())
-        //     .then(function(myJson) {
-        //         console.log('执行ajax')
-        //         setNumber0(number0+1)
-        //         console.log(number0)
-        //         setNumber0(number0+1)
-        //         console.log(number0)
-        //         setNumber0(number0+1)
-        //         console.log(number0)
-        //     });
-
-    };
-    const changeNumber0UCB = useCallback(()=>{
-        setNumber0(number0+1)
-        console.log(number0)
-        setNumber0(number0+1)
-        console.log(number0)
-        setNumber0(number0+1)
-        console.log(number0)
+        setNum(num + 1)
+        setNum(num + 1)
+        setNum(num + 1)
+        console.log('num',num)
 
         // setTimeout(()=>{
-        //     console.log('执行setTimeout')
-        //     setNumber0(number0+1)
-        //     console.log(number0)
-        //     setNumber0(number0+1)
-        //     console.log(number0)
-        //     setNumber0(number0+1)
-        //     console.log(number0)
+        //     console.log(num)
+        //     setNum((a)=>{
+        //         console.log(a)
+        //         return a + 1
+        //     })
         // })
-        //
-        // fetch('http://192.168.20.146:3000/mock/551/auth/global/wrongtopic/appeal.htm')
-        //     .then(response=>response.json())
-        //     .then(function(myJson) {
-        //         console.log('执行ajax')
-        //         setNumber0(number0+1)
-        //         console.log(number0)
-        //         setNumber0(number0+1)
-        //         console.log(number0)
-        //         setNumber0(number0+1)
-        //         console.log(number0)
-        //     });
-    },[number0])
-    const changeNumber1 = ()=>{
-        setNumber1(number1+1)
+
+        // 排除setTimeout影响，研究闭包的形成
+        ;(()=>{
+            console.log(num)
+            setNum((a)=>{
+                console.log(a)
+                return a + 1
+            })
+        })()
     }
-    const changeNumber1UCB = useCallback(()=>{
-        setNumber1(number1+1)
-    },[number1])
-    console.log('父：我渲染了');
+    console.log('父：渲染了')
     return (
         <>
-            {number0}
+            {num}
             <br/>
-            {number1}
-            <br/>
-            <TestTimes0 changeNumber0={changeNumber0}/>
-            <TestTimes1 changeNumber1={changeNumber1UCB}/>
-            <br/>
-            <Hah/>
+            <Child handleClick={handleClick}/>
         </>
     )
+
 }
 
 export default App;
